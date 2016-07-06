@@ -1,3 +1,7 @@
+function defaultModuleLoader(moduleName, done) {
+	require([addTrailingSlash(ko.bindingHandlers.module.baseDir) + moduleName], done);
+}
+
 //an AMD helper binding that allows declarative module loading/binding
 ko.bindingHandlers.module = {
     init: function(element, valueAccessor, allBindingsAccessor, data, context) {
@@ -63,6 +67,7 @@ ko.bindingHandlers.module = {
             read: function() {
                 //module name could be in an observable
                 var initialArgs,
+					moduleLoader = ko.bindingHandlers.module.loader || defaultModuleLoader,
                     moduleName = unwrap(valueAccessor());
 
                 //observable could return an object that contains a name property
@@ -85,7 +90,7 @@ ko.bindingHandlers.module = {
 
                 //at this point, if we have a module name, then require it dynamically
                 if (moduleName) {
-                    require([addTrailingSlash(ko.bindingHandlers.module.baseDir) + moduleName], function(mod) {
+                    moduleLoader(moduleName, function(mod) {
                         //if it is a constructor function then create a new instance
                         if (typeof mod === "function") {
                             mod = construct(mod, initialArgs);
